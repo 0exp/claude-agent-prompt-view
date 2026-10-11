@@ -1,0 +1,6 @@
+{
+  "name": "agent-prompt-view",
+  "owner": { "name": "Rustam Ibragimov", "email": "iamdaiver@gmail.com" },
+  "description": "A multi-line status line under the prompt: model, session, modes, usage bars and git state",
+  "plugins": [{ "name": "agent-prompt-view", "source": "./" }]
+}
