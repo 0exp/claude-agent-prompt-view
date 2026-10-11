@@ -4,17 +4,17 @@ A Claude Code mod that ships a five-line status line for under the prompt:
 
 ```
 Opus 5.5 -> [demo] (sid:419e75ee) <stime:1h23m>
-⚙ main:thinking (1m13s) │ agents:0 (sub:0 sh:0 mon:0) │ pending:0 running:0 waiting:0 idle:0
 (effort:high) (thinkmode:thinking) (outstyle:Proactive) (fastmode:false)
+⚙ main:thinking (1m13s) │ agents:0 (sub:0 sh:0 mon:0) │ pending:0 running:0 waiting:0 idle:0
 ctx ███░░░░░░░ 37% | lmt ████░░░░░░ 43% | rst ██████░░░░ 1h56m | pch ████████░░ 85%
  (08d3788a) main [+#?] | ~/Projects/demo
 ```
 
 1. Model, session name, short session id, session time (`stime`, from the
    transcript's creation time).
-2. The [agent-count](https://github.com/0exp/claude-agent-count) line, when that
+2. Modes: reasoning effort, thinking, output style, fast mode (each only when known).
+3. The [agent-count](https://github.com/0exp/claude-agent-count) line, when that
    mod writes one for the session; skipped otherwise.
-3. Modes: reasoning effort, thinking, output style, fast mode (each only when known).
 4. Bars: `ctx` context window used, `lmt` 5-hour rate limit used, `rst` time to
    its reset, `pch` prompt cache hits of the last request.
 5. Git: short sha, branch, flags (`+` staged, `#` untracked, `?` unstaged) and

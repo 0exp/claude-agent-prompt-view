@@ -2,8 +2,8 @@
 # agent-prompt-view: the status line under the prompt.
 # Reads the status line JSON on stdin and prints:
 #   1. model -> [session] (sid:…) <stime:…>
-#   2. the agent-count line, when the agent-count mod writes one for this session
-#   3. modes: effort, thinkmode, outstyle, fastmode
+#   2. modes: effort, thinkmode, outstyle, fastmode
+#   3. the agent-count line, when the agent-count mod writes one for this session
 #   4. ctx / lmt / rst / pch bars
 #   5. git sha, branch, flags | directory
 # Requires jq. Usage in statusLine.command: sh <path>/prompt-view.sh
@@ -54,7 +54,7 @@ fi
 stm="$((el / 3600))h$(printf '%02d' $((el % 3600 / 60)))m"
 model="${model}${gray}<${bold}stime:${unbold}$stm>${reset} "
 
-# line 3: modes
+# line 2: modes
 effort=$(echo "$input" | jq -r '.effort.level // empty')
 [ -n "$effort" ] && modes="$modes (${bold}effort${unbold}:$effort)"
 thinking=$(echo "$input" | jq -r '.thinking.enabled')
@@ -90,9 +90,9 @@ cch=$(echo "$input" | jq -r '.context_window.current_usage // empty | ((.input_t
 [ -n "$cch" ] && out="$out | pch $(esc '38;2;132;136;132')$(bar $cch)${reset} ${cch}%"
 
 printf '%s\n' "$model"
+[ -n "$modes" ] && printf '%s\n' "${modes# }"
 af="$HOME/.claude/agent-count/$(echo "$input" | jq -r '.session_id // empty')"
 [ -f "$af" ] && cat "$af"
-[ -n "$modes" ] && printf '%s\n' "${modes# }"
 printf '%s\n' "$out"
 
 # line 5: git sha, branch, flags (+ staged, # untracked, ? unstaged) | directory

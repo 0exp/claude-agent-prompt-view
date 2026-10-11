@@ -1,6 +1,6 @@
 ---
 name: daiver-agent-prompt-view
-description: Manage the agent-prompt-view Claude Code mod (the five-line status line under the prompt - model/session/stime, agent-count line, modes, ctx/lmt/rst/pch bars, git state). Use when the user asks to check, enable, disable, update, change, debug, release, publish or uninstall the agent-prompt-view mod/plugin, its status line script, its look or its statusLine wiring.
+description: Manage the agent-prompt-view Claude Code mod (the five-line status line under the prompt - model/session/stime, modes, agent-count line, ctx/lmt/rst/pch bars, git state). Use when the user asks to check, enable, disable, update, change, debug, release, publish or uninstall the agent-prompt-view mod/plugin, its status line script, its look or its statusLine wiring.
 ---
 
 # agent-prompt-view mod
@@ -9,8 +9,8 @@ Ships the user's status line as a script and keeps a stable copy of it:
 
 ```
 Opus 5.5 -> [demo] (sid:419e75ee) <stime:1h23m>
-⚙ main:thinking (1m13s) │ agents:0 (sub:0 sh:0 mon:0) │ …     ← agent-count mod, when present
 (effort:high) (thinkmode:thinking) (outstyle:Proactive) (fastmode:false)
+⚙ main:thinking (1m13s) │ agents:0 (sub:0 sh:0 mon:0) │ …     ← agent-count mod, when present
 ctx ███░░░░░░░ 37% | lmt ████░░░░░░ 43% | rst ██████░░░░ 1h56m | pch ████████░░ 85%
  (08d3788a) main [+#?] | ~/Projects/demo
 ```
@@ -29,7 +29,7 @@ ctx ███░░░░░░░ 37% | lmt ████░░░░░░ 43% 
 
 ## Invariants
 
-- Line 2 is the agent-count mod's file `~/.claude/agent-count/<session_id>`, printed only when it exists: keep that fragment right after the first line; the two mods stay independent.
+- Line 2 is the modes line (effort, thinkmode, outstyle, fastmode). Line 3 is the agent-count mod's file `~/.claude/agent-count/<session_id>`, printed only when it exists: keep that fragment right after the modes line; the two mods stay independent.
 - The script is POSIX `sh` + `jq` + `git`, and must print something even with a minimal input (`{"model":{"display_name":"X"},"cwd":"/tmp"}`): every field is optional.
 - Non-ASCII glyphs that are private-use (the Nerd Font branch glyph U+E0A0) are written as `printf` octal escapes, never as raw characters (editors and tools drop them silently).
 - Colors are 24-bit ANSI through `esc '<params>'`; palette: white 255,255,255; gray 128,128,128; fuchsia 255,0,255 (ctx); sky blue 135,206,235 (lmt); light green 144,238,144 (rst); gray-green 132,136,132 (pch); khaki 212,201,106 (sha); violet bold 170,127,240 (branch); coral bold 239,100,124 (flags); snow 255,250,250 (session).
@@ -63,6 +63,6 @@ Disabling or uninstalling leaves the installed copy, so the status line keeps wo
 ## Debugging
 
 - Status line empty or stale: the installed copy is missing or old (status script), `jq` missing, or `statusLine.command` not wired. Run the copy by hand: `echo '{"model":{"display_name":"X"},"cwd":"/tmp"}' | sh ~/.claude/agent-prompt-view/statusline.sh`.
-- Second line missing: the agent-count mod is not loaded or has not written a file for this session yet.
+- Agent-count line missing: the agent-count mod is not loaded or has not written a file for this session yet.
 - `stime` wrong off macOS: `stat -f %B` is BSD; the fallback is `cost.total_duration_ms`.
 - Branch glyph shown as a box: the terminal font is not a Nerd Font.
