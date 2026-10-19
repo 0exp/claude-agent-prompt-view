@@ -185,7 +185,9 @@ anim() {
 }
 
 busy=''
-[ -f "$af" ] && head -n 1 "$af" | sed "s/$e\[[0-9;]*m//g" | grep -q 'main:' &&
+# the clawdAnimate option (/clawd-animate): animate whether busy or not
+grep -qx 'animate=true' "$HOME/.claude/agent-prompt-view/config" 2>/dev/null && busy=1
+[ -z "$busy" ] && [ -f "$af" ] && head -n 1 "$af" | sed "s/$e\[[0-9;]*m//g" | grep -q 'main:' &&
   ! head -n 1 "$af" | sed "s/$e\[[0-9;]*m//g" | grep -q 'main:idle' && busy=1
 if [ -n "$busy" ]; then
   now=$(date +%s)

@@ -1,6 +1,6 @@
 {
   "name": "agent-prompt-view",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "A multi-line status line under the prompt: model, session, modes, usage bars and git state",
   "author": {
     "name": "Rustam Ibragimov",
@@ -13,6 +13,12 @@
       "title": "Show Clawd",
       "description": "Clawd, Claude's mascot, at the right edge of the status line, animated while Claude Code is busy",
       "default": true
+    },
+    "clawdAnimate": {
+      "type": "boolean",
+      "title": "Animate Clawd always",
+      "description": "Clawd animates all the time, not only while Claude Code is busy (also /clawd-animate [on|off])",
+      "default": false
     }
   }
 }

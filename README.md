@@ -38,6 +38,10 @@ Clawd is an option, on by default: `Show Clawd` (`clawd`) in `/config`, or
 `~/.claude/agent-prompt-view/config` for the script on every session start and
 on every change of the option.
 
+`Animate Clawd always` (`clawdAnimate`, off by default) animates Clawd all the
+time, busy or not; `/clawd-animate [on|off]` sets the same option (toggles it
+with no argument).
+
 The script is `statusline/prompt-view.sh`. On every session start the mod copies
 it to `~/.claude/agent-prompt-view/statusline.sh`, a path that stays the same
 across plugin updates, so the status line always runs the installed version.
