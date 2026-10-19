@@ -135,7 +135,7 @@ fi
 # the edge as the status line is from the left one; next to the panel when the
 # terminal width ($COLUMNS) is unknown or too narrow; the Claude Code version
 # centered under its feet. While Claude Code is busy (the agent-count line's
-# main loop is not idle) Clawd plays one of ten animations, a new random one
+# main loop is not idle) Clawd plays one of eleven animations, a new random one
 # every few seconds, a frame per refresh (the status line runs once a second)
 orange=$(esc '38;2;215;119;87')
 ver=$(echo "$input" | jq -r '.version // empty')
@@ -161,6 +161,9 @@ pose() {
     wave) r1='  ▐▛███▜▌▖' r2=' ▝▜█████▛' ;;
     tapl) r3='      ▝▝' ;;
     tapr) r3='   ▘▘' ;;
+    crack) r0='      ▝' r1='  ▐▛▞█▜▘ ▗' r2=' ▝▜█▚██▛▖' r3='   ▘▖ ▝▗' ;;
+    scatter) r0='  ▗   ▘  ▝' r1=' ▘ ▚▝▞▖▘ ▗' r2='▖ ▞▗▚ ▘▞ ▝' r3='  ▝ ▖ ▗ ▘' ;;
+    dust) r0=' ▝    ▖   ▗' r1='▗   ▘    ▝' r2='   ▖   ▗' r3='▘    ▝    ▖' ;;
   esac
   case "$2" in
     L) r0=${r0# } r1=${r1# } r2=${r2# } r3=${r3# } ;;
@@ -168,38 +171,50 @@ pose() {
   esac
 }
 
-# the animations: one pose[:L|R shift] per frame
+# the animations, by the names the clawdAnimation option takes: one
+# pose[:L|R shift] per frame
+anims='jump spin sway blink cheer wave stretch hop tap shiver pixels'
 anim() {
   case "$1" in
-    0) echo 'rest squash up rest' ;;                                # jump
-    1) echo 'rest turn side back side turnback' ;;                  # spin around
-    2) echo 'rest rest:L rest rest:R' ;;                            # sway
-    3) echo 'rest rest blink rest' ;;                               # blink
-    4) echo 'rest cheer rest cheer' ;;                              # cheer
-    5) echo 'wave rest wave rest' ;;                                # wave
-    6) echo 'rest squash rest stretch' ;;                           # squash and stretch
-    7) echo 'rest up:R rest up:L' ;;                                # hop side to side
-    8) echo 'rest tapl rest tapr' ;;                                # tap dance
-    9) echo 'rest:L rest:R rest:L rest:R' ;;                        # shiver
+    jump) echo 'rest squash up rest' ;;
+    spin) echo 'rest turn side back side turnback' ;;
+    sway) echo 'rest rest:L rest rest:R' ;;
+    blink) echo 'rest rest blink rest' ;;
+    cheer) echo 'rest cheer rest cheer' ;;
+    wave) echo 'wave rest wave rest' ;;
+    stretch) echo 'rest squash rest stretch' ;;                     # squash and stretch
+    hop) echo 'rest up:R rest up:L' ;;                              # hop side to side
+    tap) echo 'rest tapl rest tapr' ;;                              # tap dance
+    shiver) echo 'rest:L rest:R rest:L rest:R' ;;
+    pixels) echo 'rest crack scatter dust scatter crack' ;;         # fall to pixels and back
   esac
 }
+# the clawdAnimation option (/clawd-animation): one of them, or random
+animation=$(sed -n 's/^animation=//p' "$HOME/.claude/agent-prompt-view/config" 2>/dev/null)
+case " $anims " in *" $animation "*) ;; *) animation='' ;; esac
 
 busy=''
 # the clawdAnimate option (/clawd-animate): animate whether busy or not
 grep -qx 'animate=true' "$HOME/.claude/agent-prompt-view/config" 2>/dev/null && busy=1
 [ -z "$busy" ] && [ -f "$af" ] && head -n 1 "$af" | sed "s/$e\[[0-9;]*m//g" | grep -q 'main:' &&
   ! head -n 1 "$af" | sed "s/$e\[[0-9;]*m//g" | grep -q 'main:idle' && busy=1
+
 if [ -n "$busy" ]; then
   now=$(date +%s)
-  # a random animation every 8 seconds, never the same twice in a row
+  # random: a new one every 8 seconds, never the same twice in a row
   rnd() {
     x=$((($1 * 2654435761) & 4294967295))
     x=$((((x ^ (x >> 16)) * 73244475) & 4294967295))
-    echo $(((x ^ (x >> 16)) % 10))
+    echo $(((x ^ (x >> 16)) % 11))
   }
-  k=$(rnd $((now / 8)))
-  [ "$k" -eq "$(rnd $((now / 8 - 1)))" ] && k=$(((k + 1) % 10))
-  set -- $(anim "$k")
+  if [ -z "$animation" ]; then
+    k=$(rnd $((now / 8)))
+    [ "$k" -eq "$(rnd $((now / 8 - 1)))" ] && k=$(((k + 1) % 11))
+    set -- $anims
+    shift $k
+    animation=$1
+  fi
+  set -- $(anim "$animation")
   shift $((now % $#))
   sh=''
   case "$1" in *:*) sh=${1##*:} ;; esac

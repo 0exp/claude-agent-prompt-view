@@ -1,6 +1,6 @@
 {
   "name": "agent-prompt-view",
-  "version": "0.5.0",
+  "version": "0.7.0",
   "description": "A multi-line status line under the prompt: model, session, modes, usage bars and git state",
   "author": {
     "name": "Rustam Ibragimov",
@@ -19,6 +19,26 @@
       "title": "Animate Clawd always",
       "description": "Clawd animates all the time, not only while Claude Code is busy (also /clawd-animate [on|off])",
       "default": false
+    },
+    "clawdAnimation": {
+      "type": "string",
+      "title": "Clawd's animation",
+      "description": "The animation Clawd plays, or a random one every few seconds (also /clawd-animation <name>)",
+      "default": "random",
+      "options": [
+        "random",
+        "jump",
+        "spin",
+        "sway",
+        "blink",
+        "cheer",
+        "wave",
+        "stretch",
+        "hop",
+        "tap",
+        "shiver",
+        "pixels"
+      ]
     }
   }
 }

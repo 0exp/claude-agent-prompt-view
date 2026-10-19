@@ -28,9 +28,10 @@ next to the lines.
 
 While Claude Code is busy (the agent-count line shows the main loop anything
 but `idle`), Clawd moves: jump, spin around, sway, blink, cheer, wave, squash and
-stretch, hop side to side, tap dance, shiver. A new random animation starts every
-8 seconds, a frame per refresh (the status line runs at most once a second).
-Without the agent-count mod Clawd stays still.
+stretch, hop side to side, tap dance, shiver, fall to pixels and back. A new
+random animation starts every 8 seconds, a frame per refresh (the status line
+runs at most once a second). Without the agent-count mod Clawd stays still
+(unless `Animate Clawd always` is on).
 
 Clawd is an option, on by default: `Show Clawd` (`clawd`) in `/config`, or
 `pluginConfigs["agent-prompt-view@agent-prompt-view"].options.clawd` in
@@ -41,6 +42,11 @@ on every change of the option.
 `Animate Clawd always` (`clawdAnimate`, off by default) animates Clawd all the
 time, busy or not; `/clawd-animate [on|off]` sets the same option (toggles it
 with no argument).
+
+`Clawd's animation` (`clawdAnimation`, `random` by default) picks the one
+animation Clawd plays: `random`, `jump`, `spin`, `sway`, `blink`, `cheer`,
+`wave`, `stretch`, `hop`, `tap`, `shiver`, `pixels`; `/clawd-animation <name>`
+sets it, and shows the current one with no argument.
 
 The script is `statusline/prompt-view.sh`. On every session start the mod copies
 it to `~/.claude/agent-prompt-view/statusline.sh`, a path that stays the same
