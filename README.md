@@ -4,10 +4,10 @@ A Claude Code mod that ships a five-line status line for under the prompt:
 
 ```
 Opus 5.5 -> [demo] (sid:419e75ee) <stime:1h23m>
-(effort:high) (thinkmode:thinking) (outstyle:Proactive) (fastmode:false)
-⚙ main:thinking (1m13s) │ agents:0 (sub:0 sh:0 mon:0) │ pending:0 running:0 waiting:0 idle:0
-ctx ███░░░░░░░ 37% | lmt ████░░░░░░ 43% | rst ██████░░░░ 1h56m | pch ████████░░ 85%
- (08d3788a) main [+#?] | ~/Projects/demo
+(effort:high) (thinkmode:thinking) (outstyle:Proactive) (fastmode:false)                         ▐▛███▜▌
+⚙ main:thinking (1m13s) │ agents:0 (sub:0 sh:0 mon:0) │ pending:0 running:0 waiting:0 idle:0   ▝▜█████▛▘
+ctx ███░░░░░░░ 37% | lmt ████░░░░░░ 43% | rst ██████░░░░ 1h56m | pch ████████░░ 85%               ▘▘ ▝▝
+ (08d3788a) main [+#?] | ~/Projects/demo                                                        2.1.303
 ```
 
 1. Model, session name, short session id, session time (`stime`, from the
@@ -19,6 +19,18 @@ ctx ███░░░░░░░ 37% | lmt ████░░░░░░ 43% 
    its reset, `pch` prompt cache hits of the last request.
 5. Git: short sha, branch, flags (`+` staged, `#` untracked, `?` unstaged) and
    the working directory.
+
+At the right edge of the terminal, vertically centered, sits Clawd, Claude's
+mascot, in Claude orange, with the Claude Code version centered under its feet:
+as far from the edge as the status line is from the left one (`pad` in the
+script). When the width (`$COLUMNS`) is unknown or too narrow, Clawd sits right
+next to the lines.
+
+While Claude Code is busy (the agent-count line shows the main loop anything
+but `idle`), Clawd moves: jump, spin around, sway, blink, cheer, wave, squash and
+stretch, hop side to side, tap dance, shiver. A new random animation starts every
+8 seconds, a frame per refresh (the status line runs at most once a second).
+Without the agent-count mod Clawd stays still.
 
 The script is `statusline/prompt-view.sh`. On every session start the mod copies
 it to `~/.claude/agent-prompt-view/statusline.sh`, a path that stays the same
