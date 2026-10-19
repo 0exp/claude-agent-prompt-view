@@ -10,7 +10,7 @@ Ships the user's status line as a script and keeps a stable copy of it:
 ```
 Opus 5.5 -> [demo] (sid:419e75ee) <stime:1h23m>
 (effort:high) (thinkmode:thinking) (outstyle:Proactive) (fastmode:false)
-⚙ main:thinking (1m13s) │ agents:0 (sub:0 sh:0 mon:0) │ …     ← agent-count mod, when present
+⚙ main:thinking (1m13s) │ agents:0 (sub:0 sh:0 mon:0) -> …    ← agent-count mod, when present
 ctx ███░░░░░░░ 37% | lmt ████░░░░░░ 43% | rst ██████░░░░ 1h56m | pch ████████░░ 85%
  (08d3788a) main [+#?] | ~/Projects/demo
 ```
