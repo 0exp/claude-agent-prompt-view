@@ -124,6 +124,13 @@ panel() {
   fi
 }
 
+# Clawd is the mod's option (userConfig `clawd`, on by default): the hooks
+# module writes it to the config file next to this script
+if grep -qx 'clawd=false' "$HOME/.claude/agent-prompt-view/config" 2>/dev/null; then
+  panel
+  exit 0
+fi
+
 # Clawd, Claude's mascot, at the right edge (vertically centered): as far from
 # the edge as the status line is from the left one; next to the panel when the
 # terminal width ($COLUMNS) is unknown or too narrow; the Claude Code version

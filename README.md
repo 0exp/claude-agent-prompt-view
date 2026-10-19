@@ -32,6 +32,12 @@ stretch, hop side to side, tap dance, shiver. A new random animation starts ever
 8 seconds, a frame per refresh (the status line runs at most once a second).
 Without the agent-count mod Clawd stays still.
 
+Clawd is an option, on by default: `Show Clawd` (`clawd`) in `/config`, or
+`pluginConfigs["agent-prompt-view@agent-prompt-view"].options.clawd` in
+`~/.claude/settings.json`. The mod writes it to
+`~/.claude/agent-prompt-view/config` for the script on every session start and
+on every change of the option.
+
 The script is `statusline/prompt-view.sh`. On every session start the mod copies
 it to `~/.claude/agent-prompt-view/statusline.sh`, a path that stays the same
 across plugin updates, so the status line always runs the installed version.
