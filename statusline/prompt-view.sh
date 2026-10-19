@@ -227,9 +227,10 @@ $lines
 EOF
 top=$(((n - h + 1) / 2)) # an odd spare line goes above, off the prompt
 pad=2 # the status line's left indent
-# the canvas' first cell: Clawd at rest ends pad cells before the right edge
+# the canvas' first cell: the whole canvas (a step right included) ends pad
+# cells before the right edge
 col=$((w + 1))
-case "$COLUMNS" in '' | *[!0-9]*) ;; *) [ $((COLUMNS - 2 * pad - 10)) -gt $col ] && col=$((COLUMNS - 2 * pad - 10)) ;; esac
+case "$COLUMNS" in '' | *[!0-9]*) ;; *) [ $((COLUMNS - 2 * pad - 11)) -gt $col ] && col=$((COLUMNS - 2 * pad - 11)) ;; esac
 i=0
 while IFS= read -r l; do
   a=$((i - top))

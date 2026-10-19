@@ -1,6 +1,6 @@
 {
   "name": "agent-prompt-view",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "A multi-line status line under the prompt: model, session, modes, usage bars and git state",
   "author": { "name": "Rustam Ibragimov", "email": "iamdaiver@gmail.com" },
   "license": "MIT"
