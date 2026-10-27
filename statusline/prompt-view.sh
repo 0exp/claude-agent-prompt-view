@@ -18,6 +18,7 @@ bold=$(esc 1)
 unbold=$(esc 22)
 gray=$(esc '38;2;128;128;128')
 white=$(esc '38;2;255;255;255')
+orange=$(esc '38;2;215;119;87') # Clawd's
 
 # a 10-cell bar of a percentage
 bar() {
@@ -78,16 +79,21 @@ model="$mname -> ${model% }"
 # with no request yet the cache is 0%
 ctx=$(echo "$input" | jq -r '.context_window.used_percentage // 0' | awk '{printf "%d", $1}')
 five=$(printf '%.0f' "$(echo "$input" | jq -r '.rate_limits.five_hour.used_percentage // 0')")
+now=$(date +%s)
 left=18000
 rst=$(echo "$input" | jq -r '.rate_limits.five_hour.resets_at // empty')
 if [ -n "$rst" ]; then
-  left=$((rst - $(date +%s)))
+  left=$((rst - now))
   [ $left -le 0 ] && five=0 left=18000
   [ $left -gt 18000 ] && left=18000
 fi
 out="ctx $(esc '38;2;255;0;255')$(bar $ctx)${reset} ${ctx}%"
 out="$out | lmt $(esc '38;2;135;206;235')$(bar $five)${reset} ${five}%"
 out="$out | rst $(esc '38;2;144;238;144')$(bar $(((18000 - left) * 100 / 18000)))${reset} $((left / 3600))h$(printf '%02d' $((left % 3600 / 60)))m"
+# the reset's local time, 24-hour HHhMMm, in Clawd's orange (BSD date -r, else
+# GNU date -d); with no window yet, when one that starts now resets
+hm=$(date -r $((now + left)) +%Hh%Mm 2>/dev/null || date -d "@$((now + left))" +%Hh%Mm 2>/dev/null)
+[ -n "$hm" ] && out="$out ${orange}(at $hm)${reset}"
 cch=$(echo "$input" | jq -r '(.context_window.current_usage // {}) | ((.input_tokens // 0) + (.cache_creation_input_tokens // 0) + (.cache_read_input_tokens // 0)) as $t | if $t > 0 then ((.cache_read_input_tokens // 0) * 100 / $t | floor) else 0 end')
 out="$out | pch $(esc '38;2;132;136;132')$(bar $cch)${reset} ${cch}%"
 
@@ -138,7 +144,6 @@ fi
 # centered under its feet. While Claude Code is busy (the agent-count line's
 # main loop is not idle) Clawd plays one of eleven animations, a new random one
 # every few seconds, a frame per refresh (the status line runs once a second)
-orange=$(esc '38;2;215;119;87')
 ver=$(echo "$input" | jq -r '.version // empty')
 e=$(printf '\033')
 
