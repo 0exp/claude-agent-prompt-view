@@ -72,23 +72,24 @@ session=$(echo "$input" | jq -r '.session_name // empty')
 model="$(esc '38;2;255;250;250')[${bold}$session${unbold}]${reset} $model"
 model="$mname -> ${model% }"
 
-# line 4: context, 5-hour limit, its reset, prompt cache hits
+# line 4: context, 5-hour limit, its reset, prompt cache hits; all four from
+# the start: with no rate limits yet (no response in this session) or a 5-hour
+# window that has already reset, nothing is used and a whole window is ahead;
+# with no request yet the cache is 0%
 ctx=$(echo "$input" | jq -r '.context_window.used_percentage // 0' | awk '{printf "%d", $1}')
-five=$(echo "$input" | jq -r '.rate_limits.five_hour.used_percentage // empty')
-out="ctx $(esc '38;2;255;0;255')$(bar $ctx)${reset} ${ctx}%"
-if [ -n "$five" ]; then
-  five=$(printf '%.0f' "$five")
-  out="$out | lmt $(esc '38;2;135;206;235')$(bar $five)${reset} ${five}%"
-fi
+five=$(printf '%.0f' "$(echo "$input" | jq -r '.rate_limits.five_hour.used_percentage // 0')")
+left=18000
 rst=$(echo "$input" | jq -r '.rate_limits.five_hour.resets_at // empty')
 if [ -n "$rst" ]; then
   left=$((rst - $(date +%s)))
-  [ $left -lt 0 ] && left=0
+  [ $left -le 0 ] && five=0 left=18000
   [ $left -gt 18000 ] && left=18000
-  out="$out | rst $(esc '38;2;144;238;144')$(bar $(((18000 - left) * 100 / 18000)))${reset} $((left / 3600))h$(printf '%02d' $((left % 3600 / 60)))m"
 fi
-cch=$(echo "$input" | jq -r '.context_window.current_usage // empty | ((.input_tokens // 0) + (.cache_creation_input_tokens // 0) + (.cache_read_input_tokens // 0)) as $t | if $t > 0 then ((.cache_read_input_tokens // 0) * 100 / $t | floor) else empty end')
-[ -n "$cch" ] && out="$out | pch $(esc '38;2;132;136;132')$(bar $cch)${reset} ${cch}%"
+out="ctx $(esc '38;2;255;0;255')$(bar $ctx)${reset} ${ctx}%"
+out="$out | lmt $(esc '38;2;135;206;235')$(bar $five)${reset} ${five}%"
+out="$out | rst $(esc '38;2;144;238;144')$(bar $(((18000 - left) * 100 / 18000)))${reset} $((left / 3600))h$(printf '%02d' $((left % 3600 / 60)))m"
+cch=$(echo "$input" | jq -r '(.context_window.current_usage // {}) | ((.input_tokens // 0) + (.cache_creation_input_tokens // 0) + (.cache_read_input_tokens // 0)) as $t | if $t > 0 then ((.cache_read_input_tokens // 0) * 100 / $t | floor) else 0 end')
+out="$out | pch $(esc '38;2;132;136;132')$(bar $cch)${reset} ${cch}%"
 
 af="$HOME/.claude/agent-count/$(echo "$input" | jq -r '.session_id // empty')"
 

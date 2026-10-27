@@ -16,7 +16,9 @@ ctx ███░░░░░░░ 37% | lmt ████░░░░░░ 43% 
 3. The [agent-count](https://github.com/0exp/claude-agent-count) line, when that
    mod writes one for the session; skipped otherwise.
 4. Bars: `ctx` context window used, `lmt` 5-hour rate limit used, `rst` time to
-   its reset, `pch` prompt cache hits of the last request.
+   its reset, `pch` prompt cache hits of the last request. All four show from
+   the start: before the first response (or once the 5-hour window has reset)
+   `lmt` is 0%, `rst` a whole 5h00m window and `pch` 0%.
 5. Git: short sha, branch, flags (`+` staged, `#` untracked, `?` unstaged) and
    the working directory.
 
