@@ -9,6 +9,10 @@ const TARGET = '.claude/agent-prompt-view/statusline.sh'
 const CONFIG = '.claude/agent-prompt-view/config'
 // Clawd's animations, as the script and the clawdAnimation option name them
 const ANIMATIONS = ['random', 'jump', 'spin', 'sway', 'blink', 'cheer', 'wave', 'stretch', 'hop', 'tap', 'shiver', 'pixels']
+// the status line's input has no auto memory state: this folder holds it, a file
+// per session (`on` or `off`), for the script's <automemory:…> segment
+const AUTO_MEMORY = '.claude/agent-prompt-view/automemory'
+const AUTO_MEMORY_KEY = 'autoMemoryEnabled'
 
 type Config = { clawd: boolean; animate: boolean; animation: string }
 
@@ -32,6 +36,28 @@ async function setOption($: EngineInterface, field: string, value: ConfigValue) 
   return row === undefined ? undefined : (await $.config.set({ key: row.key, value })).deny
 }
 
+// /pause-memory, as the prompt footer's mode label says it
+let memoryPaused = false
+// the engine left the memory section out though no setting turned it off: a kind
+// of session without auto memory (remote, restricted, ...)
+let memoryBlocked = false
+
+// as the engine decides, for what a plugin can see: the switch variable beats the setting
+async function autoMemoryOn($: EngineInterface) {
+  const env = (await $.env.get('CLAUDE_CODE_DISABLE_AUTO_MEMORY'))?.toLowerCase() ?? ''
+
+  if (memoryPaused || ['1', 'true', 'yes', 'on'].includes(env)) return false
+  if (['0', 'false', 'no', 'off'].includes(env)) return true
+
+  return !memoryBlocked && (await $.settings.read({ key: AUTO_MEMORY_KEY })) !== false
+}
+
+async function writeAutoMemory($: EngineInterface) {
+  const path = `${await $.env.get('HOME')}/${AUTO_MEMORY}/${await $.session.id()}`
+
+  await sync($, path, (await autoMemoryOn($)) ? 'on\n' : 'off\n')
+}
+
 export const register: Register = (on, options) => {
   const config: Config = {
     clawd: options.clawd !== false,
@@ -44,6 +70,9 @@ export const register: Register = (on, options) => {
 
     await sync($, `${home}/${TARGET}`, await $.fs.read(`${$.plugin.root}/${SCRIPT}`))
     await writeConfig($, config)
+    await writeAutoMemory($)
+    // a second's refresh, as the status line's: /memory changes the setting any time
+    $.clock.every(1000, () => writeAutoMemory($))
     await $.command.register({
       name: 'clawd-animate',
       description: 'Animate Clawd in the status line all the time, not only while busy',
@@ -54,6 +83,22 @@ export const register: Register = (on, options) => {
       description: "Clawd's animation: one of them, or a random one every few seconds",
       argumentHint: `[${ANIMATIONS.join('|')}]`,
     })
+
+    return next(e)
+  }).catch(($, e, next) => next(e))
+
+  // the prompt's memory section is the engine's own answer for this session
+  on('prompt.section', { name: 'memory' }, async ($, e, next) => {
+    const result = await next(e)
+
+    memoryBlocked = result.text === null && !memoryPaused && (await $.settings.read({ key: AUTO_MEMORY_KEY })) !== false
+    await writeAutoMemory($)
+
+    return result
+  }).catch(($, e, next) => next(e))
+
+  on('ui.render', { component: 'SessionMode' }, async ($, e, next) => {
+    memoryPaused = e.props.modes.includes('memory paused')
 
     return next(e)
   }).catch(($, e, next) => next(e))
