@@ -8,7 +8,7 @@ description: Manage the agent-prompt-view Claude Code mod (the five-line status 
 Ships the user's status line as a script and keeps a stable copy of it:
 
 ```
-Opus 5.5 -> [demo] (sid:419e75ee) <stime:1h23m>
+Opus 5.5 -> [demo] (sid:419e75ee) <stime:1h23m> <automemory:on>
 (effort:high) (thinkmode:thinking) (outstyle:Proactive) (fastmode:false)
 ⚙ main:thinking (1m13s) │ agents:0 (sub:0 sh:0 mon:0) -> …    ← agent-count mod, when present
 ctx ███░░░░░░░ 37% | lmt ████░░░░░░ 43% | rst ██████░░░░ 1h56m (at 17h48m) | pch ████████░░ 85%
@@ -21,7 +21,7 @@ ctx ███░░░░░░░ 37% | lmt ████░░░░░░ 43% 
 | --- | --- |
 | Source repo (also the marketplace) | `~/Projects/claude-agent-prompt-view/` (dev checkout of `github.com/0exp/claude-agent-prompt-view`; the status script reads `$AGENT_PROMPT_VIEW_REPO` when it lives elsewhere) |
 | Status line script (the source of truth) | `statusline/prompt-view.sh` in the repo |
-| Hooks module | `hooks/register.ts`: on `session.start` copies the script to the stable path when it differs |
+| Hooks module | `hooks/register.ts`: on `session.start` copies the script to the stable path when it differs; writes `~/.claude/agent-prompt-view/automemory/<session_id>` (`on`/`off`) every second, read by line 1 |
 | Installed copy (what the status line runs) | `~/.claude/agent-prompt-view/statusline.sh` |
 | Status-line wiring | `statusLine.command` in `~/.claude/settings.json` = `sh "$HOME/.claude/agent-prompt-view/statusline.sh"`, `refreshInterval: 1` |
 | Installed as | `agent-prompt-view@agent-prompt-view`, user scope; for development a `directory` marketplace pointing at the repo, for users the GitHub source |

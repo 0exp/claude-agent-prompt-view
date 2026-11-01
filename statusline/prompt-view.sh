@@ -1,7 +1,7 @@
 #!/bin/sh
 # agent-prompt-view: the status line under the prompt.
 # Reads the status line JSON on stdin and prints:
-#   1. model -> [session] (sid:…) <stime:…>
+#   1. model -> [session] (sid:…) <stime:…> <automemory:on|off>
 #   2. modes: effort, thinkmode, outstyle, fastmode
 #   3. the agent-count line, when the agent-count mod writes one for this session
 #   4. ctx / lmt / rst / pch bars
@@ -37,7 +37,7 @@ bar() {
 dir=$(echo "$input" | jq -r '.workspace.current_dir // .cwd // empty')
 case "$dir" in "$HOME"*) dir="~${dir#"$HOME"}" ;; esac
 
-# line 1: model -> [session] (sid:…) <stime:…>
+# line 1: model -> [session] (sid:…) <stime:…> <automemory:on|off>
 mname="${white}$(echo "$input" | jq -r '.model.display_name')${reset}"
 model=''
 sid=$(echo "$input" | jq -r '.session_id // empty' | cut -c1-8)
@@ -55,6 +55,11 @@ fi
 [ $el -lt 0 ] && el=0
 stm="$((el / 3600))h$(printf '%02d' $((el % 3600 / 60)))m"
 model="${model}${gray}<${bold}stime:${unbold}$stm>${reset} "
+
+# auto memory: the status line's input has no such field, the hooks module
+# writes it for this session; no file, no segment
+am=$(cat "$HOME/.claude/agent-prompt-view/automemory/$(echo "$input" | jq -r '.session_id // empty')" 2>/dev/null)
+case "$am" in on | off) model="${model}${gray}<${bold}automemory:${unbold}$am>${reset} " ;; esac
 
 # line 2: modes
 effort=$(echo "$input" | jq -r '.effort.level // empty')
