@@ -4,7 +4,7 @@ A Claude Code mod that ships a five-line status line for under the prompt:
 
 ```
 Opus 5.5 -> [demo] (sid:419e75ee) <stime:1h23m> <automemory:on>
-(effort:high) (thinkmode:thinking) (outstyle:Proactive) (fastmode:false)                         ▐▛███▜▌
+(effort:high) (outputstyle:Proactive) (thinkmode:thinking) (fastmode:false)                      ▐▛███▜▌
 ⚙ main:thinking (1m13s) │ agents:0 (sub:0 sh:0 mon:0) -> pending:0 running:0 waiting:0 idle:0  ▝▜█████▛▘
 ctx ███░░░░░░░ 37% | lmt ████░░░░░░ 43% | rst ██████░░░░ 1h56m (at 17h48m) | pch ████████░░ 85%   ▘▘ ▝▝
  (08d3788a) main [+#?] | ~/Projects/demo                                                        2.1.303
@@ -14,7 +14,7 @@ ctx ███░░░░░░░ 37% | lmt ████░░░░░░ 43% 
    transcript's creation time), whether auto memory is on in this session
    (`automemory`, written by the hooks module: the status line's input has no
    such field).
-2. Modes: reasoning effort, thinking, output style, fast mode (each only when known).
+2. Modes: reasoning effort, output style, thinking, fast mode (each only when known).
 3. The [agent-count](https://github.com/0exp/claude-agent-count) line, when that
    mod writes one for the session; skipped otherwise.
 4. Bars: `ctx` context window used, `lmt` 5-hour rate limit used, `rst` time to

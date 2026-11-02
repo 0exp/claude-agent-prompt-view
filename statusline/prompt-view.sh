@@ -2,7 +2,7 @@
 # agent-prompt-view: the status line under the prompt.
 # Reads the status line JSON on stdin and prints:
 #   1. model -> [session] (sid:…) <stime:…> <automemory:on|off>
-#   2. modes: effort, thinkmode, outstyle, fastmode
+#   2. modes: effort, outputstyle, thinkmode, fastmode
 #   3. the agent-count line, when the agent-count mod writes one for this session
 #   4. ctx / lmt / rst / pch bars
 #   5. git sha, branch, flags | directory
@@ -64,13 +64,13 @@ case "$am" in on | off) model="${model}${gray}<${bold}automemory:${unbold}$am>${
 # line 2: modes
 effort=$(echo "$input" | jq -r '.effort.level // empty')
 [ -n "$effort" ] && modes="$modes (${bold}effort${unbold}:$effort)"
+ostyle=$(echo "$input" | jq -r '.output_style.name // empty')
+[ -n "$ostyle" ] && modes="$modes (${bold}outputstyle${unbold}:$ostyle)"
 thinking=$(echo "$input" | jq -r '.thinking.enabled')
 case "$thinking" in
   true) modes="$modes (${bold}thinkmode${unbold}:thinking)" ;;
   false) modes="$modes (${bold}thinkmode${unbold}:non-thinking)" ;;
 esac
-ostyle=$(echo "$input" | jq -r '.output_style.name // empty')
-[ -n "$ostyle" ] && modes="$modes (${bold}outstyle${unbold}:$ostyle)"
 fast=$(echo "$input" | jq -r '.fast_mode')
 case "$fast" in true | false) modes="$modes (${bold}fastmode${unbold}:$fast)" ;; esac
 
