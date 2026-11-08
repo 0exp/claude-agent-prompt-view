@@ -16,9 +16,30 @@ esc() { printf '\033[%sm' "$1"; }
 reset=$(esc 0)
 bold=$(esc 1)
 unbold=$(esc 22)
-gray=$(esc '38;2;128;128;128')
-white=$(esc '38;2;255;255;255')
-orange=$(esc '38;2;215;119;87') # Clawd's
+
+# the colors, by theme: the `theme` option (/prompt-view-theme), which the hooks
+# module writes to the config file next to this script; an unknown name falls
+# back to default. Each is an SGR parameter list for esc
+theme=$(sed -n 's/^theme=//p' "$HOME/.claude/agent-prompt-view/config" 2>/dev/null)
+# the themes, by the names the hooks module's THEMES lists
+case "$theme" in
+  default | *)
+    c_gray='38;2;128;128;128'          # punctuation, keys, the version
+    c_white='38;2;255;255;255'         # model, directory
+    c_orange='38;2;215;119;87'         # Clawd, the rst reset time
+    c_session='38;2;255;250;250'       # [session]
+    c_ctx='38;2;255;0;255'             # ctx bar
+    c_lmt='38;2;135;206;235'           # lmt bar
+    c_rst='38;2;144;238;144'           # rst bar
+    c_pch='38;2;132;136;132'           # pch bar
+    c_sha='38;2;212;201;106'           # git sha
+    c_branch='1;38;2;170;127;240'      # branch glyph and name
+    c_flags='1;38;2;239;100;124'       # git flags
+    ;;
+esac
+gray=$(esc "$c_gray")
+white=$(esc "$c_white")
+orange=$(esc "$c_orange")
 
 # a 10-cell bar of a percentage
 bar() {
@@ -75,7 +96,7 @@ fast=$(echo "$input" | jq -r '.fast_mode')
 case "$fast" in true | false) modes="$modes (${bold}fastmode${unbold}:$fast)" ;; esac
 
 session=$(echo "$input" | jq -r '.session_name // empty')
-model="$(esc '38;2;255;250;250')[${bold}$session${unbold}]${reset} $model"
+model="$(esc "$c_session")[${bold}$session${unbold}]${reset} $model"
 model="$mname -> ${model% }"
 
 # line 4: context, 5-hour limit, its reset, prompt cache hits; all four from
@@ -92,15 +113,15 @@ if [ -n "$rst" ]; then
   [ $left -le 0 ] && five=0 left=18000
   [ $left -gt 18000 ] && left=18000
 fi
-out="ctx $(esc '38;2;255;0;255')$(bar $ctx)${reset} ${ctx}%"
-out="$out | lmt $(esc '38;2;135;206;235')$(bar $five)${reset} ${five}%"
-out="$out | rst $(esc '38;2;144;238;144')$(bar $(((18000 - left) * 100 / 18000)))${reset} $((left / 3600))h$(printf '%02d' $((left % 3600 / 60)))m"
+out="ctx $(esc "$c_ctx")$(bar $ctx)${reset} ${ctx}%"
+out="$out | lmt $(esc "$c_lmt")$(bar $five)${reset} ${five}%"
+out="$out | rst $(esc "$c_rst")$(bar $(((18000 - left) * 100 / 18000)))${reset} $((left / 3600))h$(printf '%02d' $((left % 3600 / 60)))m"
 # the reset's local time, 24-hour HHhMMm, in Clawd's orange (BSD date -r, else
 # GNU date -d); with no window yet, when one that starts now resets
 hm=$(date -r $((now + left)) +%Hh%Mm 2>/dev/null || date -d "@$((now + left))" +%Hh%Mm 2>/dev/null)
 [ -n "$hm" ] && out="$out ${orange}(at $hm)${reset}"
 cch=$(echo "$input" | jq -r '(.context_window.current_usage // {}) | ((.input_tokens // 0) + (.cache_creation_input_tokens // 0) + (.cache_read_input_tokens // 0)) as $t | if $t > 0 then ((.cache_read_input_tokens // 0) * 100 / $t | floor) else 0 end')
-out="$out | pch $(esc '38;2;132;136;132')$(bar $cch)${reset} ${cch}%"
+out="$out | pch $(esc "$c_pch")$(bar $cch)${reset} ${cch}%"
 
 af="$HOME/.claude/agent-count/$(echo "$input" | jq -r '.session_id // empty')"
 
@@ -119,7 +140,7 @@ panel() {
       branch=$(git -C "$rawdir" --no-optional-locks branch --show-current 2>/dev/null)
       [ -z "$branch" ] && branch=$(git -C "$rawdir" --no-optional-locks rev-parse --short HEAD 2>/dev/null)
       sha=$(git -C "$rawdir" --no-optional-locks rev-parse --short=8 HEAD 2>/dev/null)
-      [ -n "$sha" ] && sha="${gray}($(esc '38;2;212;201;106')$sha${gray})${reset} "
+      [ -n "$sha" ] && sha="${gray}($(esc "$c_sha")$sha${gray})${reset} "
       st=$(git -C "$rawdir" --no-optional-locks status --porcelain 2>/dev/null)
       flags=''
       printf '%s\n' "$st" | grep -q '^[MADRCTU]' && flags="$flags+"
@@ -127,9 +148,9 @@ panel() {
       printf '%s\n' "$st" | grep -q '^.[MADRCTU]' && flags="$flags?"
     fi
     if [ -n "$branch" ]; then
-      violet=$(esc '1;38;2;170;127;240')
+      violet=$(esc "$c_branch")
       icon=$(printf '\356\202\240') # Nerd Font branch glyph (U+E0A0)
-      printf '%s\n' "${violet}${icon}${reset} $sha${violet}$branch${reset} $(esc '1;38;2;239;100;124')[$flags]${reset} | ${white}$dir${reset}"
+      printf '%s\n' "${violet}${icon}${reset} $sha${violet}$branch${reset} $(esc "$c_flags")[$flags]${reset} | ${white}$dir${reset}"
     else
       printf '%s\n' "${white}$dir${reset}"
     fi

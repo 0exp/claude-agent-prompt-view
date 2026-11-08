@@ -21,6 +21,7 @@ function world(on: On) {
     value: [
       { key: `${$.plugin.name}.clawdAnimate`, label: 'Animate Clawd always', kind: 'boolean', value: false, provider, isLocked: false },
       { key: `${$.plugin.name}.clawdAnimation`, label: "Clawd's animation", kind: 'choice', value: 'random', provider, isLocked: false },
+      { key: `${$.plugin.name}.theme`, label: 'Color theme', kind: 'choice', value: 'default', provider, isLocked: false },
     ],
   }))
   on('config.set', ($, e) => {
@@ -47,7 +48,7 @@ test('Clawd is on and animates only while busy by default', async ($, on) => {
 
   await $.session.start(start)
 
-  expect(files.get(CONFIG)).toBe('clawd=true\nanimate=false\nanimation=random\n')
+  expect(files.get(CONFIG)).toBe('clawd=true\nanimate=false\nanimation=random\ntheme=default\n')
   expect(files.get('/home/me/.claude/agent-prompt-view/statusline.sh')).toBe('#!/bin/sh\n')
 })
 
@@ -56,7 +57,7 @@ test('the clawd option turns Clawd off', { options: { clawd: false } }, async ($
 
   await $.session.start(start)
 
-  expect(files.get(CONFIG)).toBe('clawd=false\nanimate=false\nanimation=random\n')
+  expect(files.get(CONFIG)).toBe('clawd=false\nanimate=false\nanimation=random\ntheme=default\n')
 })
 
 test('the clawdAnimate option animates Clawd all the time', { options: { clawdAnimate: true } }, async ($, on) => {
@@ -64,7 +65,7 @@ test('the clawdAnimate option animates Clawd all the time', { options: { clawdAn
 
   await $.session.start(start)
 
-  expect(files.get(CONFIG)).toBe('clawd=true\nanimate=true\nanimation=random\n')
+  expect(files.get(CONFIG)).toBe('clawd=true\nanimate=true\nanimation=random\ntheme=default\n')
 })
 
 test('/clawd-animate toggles the option, on and off set it', async ($, on) => {
@@ -73,9 +74,9 @@ test('/clawd-animate toggles the option, on and off set it', async ($, on) => {
   await $.session.start(start)
 
   expect((await $.command.run(run(''))).text).toBe('Clawd now animates all the time.')
-  expect(files.get(CONFIG)).toBe('clawd=true\nanimate=true\nanimation=random\n')
+  expect(files.get(CONFIG)).toBe('clawd=true\nanimate=true\nanimation=random\ntheme=default\n')
   await $.command.run(run('off'))
-  expect(files.get(CONFIG)).toBe('clawd=true\nanimate=false\nanimation=random\n')
+  expect(files.get(CONFIG)).toBe('clawd=true\nanimate=false\nanimation=random\ntheme=default\n')
   await $.command.run(run('on'))
   expect(sets).toEqual(['clawdAnimate=true', 'clawdAnimate=false', 'clawdAnimate=true'])
   expect((await $.command.run(run('maybe'))).text).toBe('Usage: /clawd-animate [on|off]')
@@ -86,7 +87,7 @@ test('the clawdAnimation option names the animation', { options: { clawdAnimatio
 
   await $.session.start(start)
 
-  expect(files.get(CONFIG)).toBe('clawd=true\nanimate=false\nanimation=pixels\n')
+  expect(files.get(CONFIG)).toBe('clawd=true\nanimate=false\nanimation=pixels\ntheme=default\n')
 })
 
 test('/clawd-animation sets the option, shows it with no argument', async ($, on) => {
@@ -96,8 +97,50 @@ test('/clawd-animation sets the option, shows it with no argument', async ($, on
 
   expect((await $.command.run(run('', 'clawd-animation'))).text).toContain("Clawd's animation: random")
   expect((await $.command.run(run('spin', 'clawd-animation'))).text).toBe('Clawd now plays spin.')
-  expect(files.get(CONFIG)).toBe('clawd=true\nanimate=false\nanimation=spin\n')
+  expect(files.get(CONFIG)).toBe('clawd=true\nanimate=false\nanimation=spin\ntheme=default\n')
   await $.command.run(run('random', 'clawd-animation'))
   expect(sets).toEqual(['clawdAnimation=spin', 'clawdAnimation=random'])
   expect((await $.command.run(run('moonwalk', 'clawd-animation'))).text).toContain('Usage: /clawd-animation [random|jump|')
+})
+
+test('an unknown theme option falls back to default', { options: { theme: 'neon' } }, async ($, on) => {
+  const { files } = world(on)
+
+  await $.session.start(start)
+
+  expect(files.get(CONFIG)).toBe('clawd=true\nanimate=false\nanimation=random\ntheme=default\n')
+})
+
+test('/prompt-view-theme sets the option, shows it with no argument', async ($, on) => {
+  const { files, sets } = world(on)
+
+  await $.session.start(start)
+
+  expect((await $.command.run(run('', 'prompt-view-theme'))).text).toBe('Status line theme: default (one of default)')
+  expect((await $.command.run(run('default', 'prompt-view-theme'))).text).toBe('The status line now uses the default theme.')
+  expect(sets).toEqual(['theme=default'])
+  expect(files.get(CONFIG)).toBe('clawd=true\nanimate=false\nanimation=random\ntheme=default\n')
+  expect((await $.command.run(run('neon', 'prompt-view-theme'))).text).toBe('Usage: /prompt-view-theme [default]')
+})
+
+// the prompt box with the caret at the end, as prompt.autocomplete sees it
+const typed = (text: string) => {
+  const start = text.lastIndexOf(' ') + 1
+  return { text, cursor: text.length, token: text.slice(start), start }
+}
+
+test('the typeahead offers the themes for /prompt-view-theme', async ($, on) => {
+  world(on)
+  on('prompt.autocomplete', () => ({ suggestions: [] }))
+
+  await $.session.start(start)
+
+  expect((await $.prompt.autocomplete(typed('/prompt-view-t'))).suggestions).toEqual([
+    { text: '/prompt-view-theme default', description: 'current theme' },
+  ])
+  expect((await $.prompt.autocomplete(typed('/prompt-view-theme d'))).suggestions).toEqual([{ text: 'default', description: 'current theme' }])
+  expect((await $.prompt.autocomplete(typed('/prompt-view-theme default'))).suggestions).toEqual([])
+  expect((await $.prompt.autocomplete(typed('/prompt-view-theme x'))).suggestions).toEqual([])
+  expect((await $.prompt.autocomplete(typed('/pro'))).suggestions).toEqual([])
+  expect((await $.prompt.autocomplete(typed('hello /prompt-view-theme'))).suggestions).toEqual([])
 })

@@ -53,6 +53,14 @@ animation Clawd plays: `random`, `jump`, `spin`, `sway`, `blink`, `cheer`,
 `wave`, `stretch`, `hop`, `tap`, `shiver`, `pixels`; `/clawd-animation <name>`
 sets it, and shows the current one with no argument.
 
+`Color theme` (`theme`, `default` by default) picks the status line's colors;
+`/prompt-view-theme <name>` sets it, and shows the current one with no argument.
+The prompt box's typeahead lists the themes for the command.
+Themes: `default` (the palette above: white, gray, fuchsia, sky blue, light
+green, Clawd orange, khaki, violet, coral). A theme is a block in the script's
+`case "$theme"` plus its name in `THEMES` in `hooks/register.ts` and in the
+option's `options` in `.claude-plugin/plugin.json`.
+
 The script is `statusline/prompt-view.sh`. On every session start the mod copies
 it to `~/.claude/agent-prompt-view/statusline.sh`, a path that stays the same
 across plugin updates, so the status line always runs the installed version.
